@@ -8,7 +8,7 @@ from src.ultis.four_point_transform import four_point_transform
 
 
 # ========= CONFIG =========
-MODEL_PATH = "best.pt"
+MODEL_PATH = "model/bestDetect.pt"
 VIDEO_PATH = "C:/Users/Admin.ADMIN-PC/Downloads/WIN_20260108_09_51_48_Pro.mp4"
 OUT_DIR = "split"
 IMG_SIZE = 640
