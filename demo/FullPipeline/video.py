@@ -17,7 +17,7 @@ VIDEO_PATH = "C:/Users/Admin.ADMIN-PC/Downloads/WIN_20260108_09_45_18_Pro.mp4"
 OUTPUT_VIDEO_PATH = "output.mp4"  # Đường dẫn file video xuất ra
 DEVICE =  "cpu"
 CONF_THRES = 0.15
-KP_CONF_THRES = 0.9
+KP_CONF_THRES = 0.7
 # ==========================================
 
 # 1. Định nghĩa mô hình OCR (Theo kiến trúc bạn cung cấp)
@@ -57,14 +57,14 @@ def get_four_digits(img):
     raw_boxes.sort(key=lambda b: b[0]) # Sắp xếp từ trái sang phải
     digit_crops = []
     for x, y, w, h in raw_boxes:
-        if (w / h) > 0.6: # Box quá béo -> tách đôi
+        if (w / h) > 0.7: # Box quá béo -> tách đôi
             mid = w // 2
             digit_crops.append(img[y:y+h, x:x+mid])
             digit_crops.append(img[y:y+h, x+mid:x+w])
         else:
             digit_crops.append(img[y:y+h, x:x+w])
     
-    return digit_crops[:4] if len(digit_crops) >= 4 else None
+    return digit_crops[:4] if len(digit_crops) == 4 else None
 
 # 3. Khởi tạo các mô hình
 yolo_model = YOLO(YOLO_MODEL_PATH)
