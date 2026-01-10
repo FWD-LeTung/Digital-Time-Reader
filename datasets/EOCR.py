@@ -9,22 +9,21 @@ import numpy as np
 # =========================
 # CONFIG
 # =========================
-INPUT_DIR = r"D:/datasetCRNN_OCR/test/images"
-OUTPUT_DIR = r"D:/datasetCRNN_OCR/ocr/test"
+INPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/dataset/train"
+OUTPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/dataset/ocr/train"
 
 IMG_OUT_DIR = os.path.join(OUTPUT_DIR, "images")
 REJECT_DIR = os.path.join(OUTPUT_DIR, "rejected")
 LABEL_FILE = os.path.join(OUTPUT_DIR, "labels.txt")
 REJECT_LOG = os.path.join(OUTPUT_DIR, "rejected_reasons.txt")
 
-TARGET_HEIGHT = 24
-MAX_WIDTH = 64
+TARGET_HEIGHT = 30
+MAX_WIDTH = 75
 
-CONF_THRESHOLD = 0.5
-
+CONF_THRESHOLD = 0.2
 ENABLE_CONF_FILTER = True
-ENABLE_LENGTH_FILTER = True
-ENABLE_TIME_FILTER = True
+ENABLE_LENGTH_FILTER = False
+ENABLE_TIME_FILTER = False
 
 MIN_DIGITS = 4
 MAX_DIGITS = 4
@@ -134,10 +133,10 @@ for fname in tqdm(img_files):
         reject_reason = "read_fail"
 
     if reject_reason is None:
-        proc = preprocess(img)
+        
 
         result = reader.readtext(
-            proc,
+            img,
             allowlist="0123456789",
             detail=1,
             paragraph=False
@@ -161,7 +160,7 @@ for fname in tqdm(img_files):
         # 3️⃣ Confidence filter
         if reject_reason is None and ENABLE_CONF_FILTER:
             if conf < CONF_THRESHOLD:
-                reject_reason = "confidence"
+                reject_reason = f"confidence {conf:.2f}"
 
     # ===== REJECT =====
     if reject_reason:
@@ -170,8 +169,8 @@ for fname in tqdm(img_files):
         continue
 
     # ===== ACCEPT =====
-    out_img = resize_for_crnn(proc)
-    cv2.imwrite(os.path.join(IMG_OUT_DIR, fname), out_img)
+    
+    cv2.imwrite(os.path.join(IMG_OUT_DIR, fname), img)
     labels.append(f"{fname}\t{text}")
 
 # =========================

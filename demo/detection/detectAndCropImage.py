@@ -4,6 +4,7 @@ import numpy as np
 import os
 import argparse
 import sys
+from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from src.utils.four_point_transform import four_point_transform
@@ -92,7 +93,7 @@ def demo(args):
             if crop is None:
                 continue
 
-            save_name = f"frame{frame_id:06d}_obj{obj_id:02d}.jpg"
+            save_name = f"{Path(args.video_path).stem}_frame{frame_id:06d}_obj{obj_id:02d}.jpg"
             cv2.imwrite(os.path.join(args.out_dir, save_name), crop)
             save_id += 1
 

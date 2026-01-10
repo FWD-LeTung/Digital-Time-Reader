@@ -7,8 +7,8 @@ from paddleocr import PaddleOCR
 # =========================
 # CONFIG
 # =========================
-INPUT_DIR = "D:/datasetCRNN_OCR/test/images"
-OUTPUT_DIR = "D:/datasetCRNN_OCR/ocr/test"
+INPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/dataset/test"
+OUTPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/dataset/ocr/test"
 IMG_OUT_DIR = os.path.join(OUTPUT_DIR, "images")
 REJECT_DIR = os.path.join(OUTPUT_DIR, "rejected")
 LABEL_FILE = os.path.join(OUTPUT_DIR, "labels.txt")
