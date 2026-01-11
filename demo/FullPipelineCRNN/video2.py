@@ -13,10 +13,10 @@ from model.Reader.crnn.ocrcrnn import OCRCRNNgray
 # ================= CONFIG (Đồng bộ với train_CRNN.py) =================
 YOLO_MODEL_PATH = "../../model/bestDetect.pt"
 OCR_MODEL_PATH = "../../model/Reader/crnn/crnn_synthetic_gray.pth"
-VIDEO_PATH = "C:/Users/Admin.ADMIN-PC/Downloads/WIN_20260108_09_45_18_Pro.mp4"
+VIDEO_PATH = "C:/Users/Admin.ADMIN-PC/Desktop/WIN_20260106_13_48_36_Pro.mp4"
 OUTPUT_VIDEO_PATH = "output_crnn.mp4"
 DEVICE = "cpu"
-CONF_THRES = 0.15
+CONF_THRES = 0.3
 KP_CONF_THRES = 0.7
 
 CHARS = "0123456789"
