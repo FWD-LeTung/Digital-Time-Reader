@@ -8,12 +8,12 @@ import sys
 # Thêm đường dẫn để import four_point_transform
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from src.utils.four_point_transform import four_point_transform
-from model.Reader.crnn.ocrcrnn import OCRCRNN
+from model.Reader.crnn.ocrcrnn import OCRCRNNgray
 
 # ================= CONFIG (Đồng bộ với train_CRNN.py) =================
 YOLO_MODEL_PATH = "../../model/bestDetect.pt"
-OCR_MODEL_PATH = "../../model/Reader/crnn/crnn_last.pth"
-VIDEO_PATH = "C:/Users/Admin.ADMIN-PC/Desktop/WIN_20260106_13_48_36_Pro.mp4"
+OCR_MODEL_PATH = "../../model/Reader/crnn/crnn_synthetic_gray.pth"
+VIDEO_PATH = "C:/Users/Admin.ADMIN-PC/Downloads/WIN_20260108_09_45_18_Pro.mp4"
 OUTPUT_VIDEO_PATH = "output_crnn.mp4"
 DEVICE = "cpu"
 CONF_THRES = 0.15
@@ -25,7 +25,7 @@ BLANK_IDX = len(CHARS) # Index 10
 
 # Khởi tạo mô hình
 yolo_model = YOLO(YOLO_MODEL_PATH)
-ocr_model = OCRCRNN(NUM_CLASSE=len(CHARS) + 1).to(DEVICE)
+ocr_model = OCRCRNNgray(NUM_CLASSES=len(CHARS) + 1).to(DEVICE)
 ocr_model.load_state_dict(torch.load(OCR_MODEL_PATH, map_location=DEVICE))
 ocr_model.eval()
 
@@ -47,14 +47,24 @@ def decode_predictions(logits):
         return f"{text[:2]}:{text[2:]}"
     return text
 
+
 def preprocess_for_crnn(img):
     """Resize về 50x20 và chuẩn hóa (theo train_CRNN.py)"""
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
     # train_CRNN.py dùng IMG_W=50, IMG_H=20
-    resized = cv2.resize(img, (50, 20))
-    # Chuyển sang float32, chia 255 và đổi format sang C,H,W
+    resized = cv2.resize(gray, (50, 20))
+    
+    # 3. Chuyển thành Tensor & Chuẩn hóa
+    # resized lúc này có shape (20, 50)
     img_tensor = torch.from_numpy(resized).float() / 255.0
-    img_tensor = img_tensor.permute(2, 0, 1).unsqueeze(0) 
+    
+    # 4. Thêm chiều Batch và Channel: (H, W) -> (1, 1, H, W)
+    # CRNN yêu cầu input 4D: [Batch Size, Channels, Height, Width]
+    img_tensor = img_tensor.unsqueeze(0).unsqueeze(0) 
+    
     return img_tensor.to(DEVICE)
+
 
 def main():
     cap = cv2.VideoCapture(VIDEO_PATH)
@@ -98,7 +108,6 @@ def main():
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
         cv2.imshow("Digital Time Reader (CRNN)", frame)
-        out.write(frame)
         if cv2.waitKey(1) & 0xFF == 27: break
 
     cap.release()
