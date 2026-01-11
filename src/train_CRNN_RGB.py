@@ -24,7 +24,7 @@ set_seed(42)
 # =========================
 DATASET_ROOT = "D:/model2-20260110T081631Z-3-001/model2/datasets"
 
-TRAIN_DIR = os.path.join(DATASET_ROOT, "train")
+TRAIN_DIR = os.path.join(DATASET_ROOT, "train2")
 TEST_DIR  = os.path.join(DATASET_ROOT, "test")
 
 IMG_W = 50
@@ -255,7 +255,7 @@ for epoch in range(EPOCHS):
     print(f"Epoch {epoch+1}: Test Acc = {acc:.4f}")
 torch.save(
     model.state_dict(),
-    "D:/Digital-Time-Reader/model/Reader/crnn/crnn_last.pth"
+    "D:/Digital-Time-Reader/model/Reader/crnn/crnn_synthetic.pth"
 )
 # =========================
 # PLOT

@@ -5,11 +5,11 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 # --- CẤU HÌNH ---
-OUTPUT_DIR = "D:/model2-20260110T081631Z-3-001/model2/datasets/train2/images"
-LABEL_FILE = "D:/model2-20260110T081631Z-3-001/model2/datasets/train2/labels.txt"
+OUTPUT_DIR = "D:/model2-20260110T081631Z-3-001/model2/datasets/test2/images"
+LABEL_FILE = "D:/model2-20260110T081631Z-3-001/model2/datasets/test2/labels.txt"
 FONT_PATH = "D:/Downloads/SF-Pro.ttf"  
 IMG_SIZE = (50, 20)      
-NUM_SAMPLES = 100000
+NUM_SAMPLES = 20000
 
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)

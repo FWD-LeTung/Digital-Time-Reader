@@ -8,7 +8,7 @@ from tqdm import tqdm
 # CONFIG
 # =========================
 INPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/dataset/ocr/test/images"
-OUTPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/datasets/test"
+OUTPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/datasets/testGrayScale"
 
 IMG_OUT_DIR = os.path.join(OUTPUT_DIR, "images")
 REJECT_DIR = os.path.join(OUTPUT_DIR, "rejected", "unknown_prefix")
@@ -113,10 +113,13 @@ for fname in tqdm(img_files, desc="Labeling images"):
         reject_logs.append(f"{fname}\timage_read_failed")
         continue
 
+
+    # Convert to grayscale before saving
     out_img = resize_for_crnn(img)
+    out_img_gray = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
 
     out_name = fname
-    cv2.imwrite(os.path.join(IMG_OUT_DIR, out_name), out_img)
+    cv2.imwrite(os.path.join(IMG_OUT_DIR, out_name), out_img_gray)
 
     labels.append(f"{out_name}\t{label}")
 
