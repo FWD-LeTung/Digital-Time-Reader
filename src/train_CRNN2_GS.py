@@ -155,20 +155,22 @@ def accuracy(preds, targets):
             correct += 1
     return correct / len(targets)
 
+def get_gt_texts(labels, label_lengths):
+    texts = []
+    idx = 0
+    for l in label_lengths:
+        texts.append("".join(idx2char[i.item()] for i in labels[idx:idx+l]))
+        idx += l
+    return texts
+
 # =========================
 # TRAIN / EVAL LOOP (Giữ nguyên phần logic)
 # =========================
 train_ds = CRNNDataset(TRAIN_DIR)
 test_ds  = CRNNDataset(TEST_DIR)
 
-train_loader = DataLoader(
-    train_ds, batch_size=BATCH_SIZE,
-    shuffle=True, collate_fn=collate_fn
-)
-test_loader = DataLoader(
-    test_ds, batch_size=BATCH_SIZE,
-    shuffle=False, collate_fn=collate_fn
-)
+train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
+test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, shuffle=False, collate_fn=collate_fn)
 
 model = CRNN().to(DEVICE)
 criterion = nn.CTCLoss(blank=NUM_CLASSES - 1, zero_infinity=True)
@@ -178,13 +180,15 @@ train_losses, test_losses = [], []
 train_accs, test_accs = [], []
 
 for epoch in range(EPOCHS):
+    # --- TRAIN PHASE ---
     model.train()
-    epoch_loss = 0
-    pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{EPOCHS} [TRAIN]")
-    
+    epoch_train_loss = 0
+    epoch_train_correct = 0
+    total_train_samples = 0
+
+    pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{EPOCHS}")
     for imgs, labels, label_lengths in pbar:
-        imgs = imgs.to(DEVICE)
-        labels = labels.to(DEVICE)
+        imgs, labels = imgs.to(DEVICE), labels.to(DEVICE)
 
         optimizer.zero_grad()
         logits = model(imgs)
@@ -197,56 +201,79 @@ for epoch in range(EPOCHS):
         loss.backward()
         optimizer.step()
 
-        epoch_loss += loss.item()
+        epoch_train_loss += loss.item()
+        
+        # Tính Accuracy nhanh cho train (không cần pass riêng)
+        with torch.no_grad():
+            preds = greedy_decode(logits.cpu())
+            gts = get_gt_texts(labels.cpu(), label_lengths)
+            for p, g in zip(preds, gts):
+                if p == g: epoch_train_correct += 1
+            total_train_samples += len(gts)
+
         pbar.set_postfix(loss=loss.item())
 
-    train_losses.append(epoch_loss / len(train_loader))
+    train_losses.append(epoch_train_loss / len(train_loader))
+    train_accs.append(epoch_train_correct / total_train_samples)
 
+    # --- EVAL PHASE ---
     model.eval()
-    preds_all, gts_all = [], []
-    test_loss = 0
+    epoch_test_loss = 0
+    epoch_test_correct = 0
+    total_test_samples = 0
+
     with torch.no_grad():
         for imgs, labels, label_lengths in test_loader:
-            imgs = imgs.to(DEVICE)
-            labels = labels.to(DEVICE)
-
+            imgs, labels = imgs.to(DEVICE), labels.to(DEVICE)
             logits = model(imgs)
             log_probs = logits.log_softmax(2)
+            
             T = log_probs.size(1)
             input_lengths = torch.full((imgs.size(0),), T, dtype=torch.long).to(DEVICE)
             
             loss = criterion(log_probs.permute(1, 0, 2), labels, input_lengths, label_lengths)
-            test_loss += loss.item()
+            epoch_test_loss += loss.item()
 
-            texts = greedy_decode(logits.cpu())
-            gt_texts = []
-            idx = 0
-            for l in label_lengths:
-                gt_texts.append("".join(idx2char[i.item()] for i in labels[idx:idx+l]))
-                idx += l
-            preds_all.extend(texts)
-            gts_all.extend(gt_texts)
+            preds = greedy_decode(logits.cpu())
+            gts = get_gt_texts(labels.cpu(), label_lengths)
+            for p, g in zip(preds, gts):
+                if p == g: epoch_test_correct += 1
+            total_test_samples += len(gts)
 
-    acc = accuracy(preds_all, gts_all)
-    test_losses.append(test_loss / len(test_loader))
-    test_accs.append(acc)
-    train_accs.append(acc) # Lưu lại để plot
-    print(f"Epoch {epoch+1}: Test Acc = {acc:.4f}")
+    test_losses.append(epoch_test_loss / len(test_loader))
+    test_accs.append(epoch_test_correct / total_test_samples)
 
-torch.save(model.state_dict(), "D:/Digital-Time-Reader/model/Reader/crnn/crnn_synthetic_gray.pth")
+    print(f"Epoch {epoch+1}: Train Acc={train_accs[-1]:.4f}, Test Acc={test_accs[-1]:.4f}")
+
+# Save model
+save_path = "D:/Digital-Time-Reader/model/Reader/crnn/crnn_synthetic_gray.pth"
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+torch.save(model.state_dict(), save_path)
 
 # =========================
-# PLOT
+# PLOT RESULTS
 # =========================
-plt.figure(figsize=(12,5))
-plt.subplot(1,2,1)
-plt.plot(train_losses, label="Train Loss")
-plt.plot(test_losses, label="Test Loss")
-plt.legend()
-plt.title("Loss")
+plt.figure(figsize=(14, 5))
 
-plt.subplot(1,2,2)
-plt.plot(test_accs, label="Test Accuracy")
+# Đồ thị Loss
+plt.subplot(1, 2, 1)
+plt.plot(train_losses, label='Train Loss', color='blue', linestyle='--')
+plt.plot(test_losses, label='Test Loss', color='red')
+plt.title('Model Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
 plt.legend()
-plt.title("Test Accuracy")
+plt.grid(True)
+
+# Đồ thị Accuracy
+plt.subplot(1, 2, 2)
+plt.plot(train_accs, label='Train Accuracy', color='blue', linestyle='--')
+plt.plot(test_accs, label='Test Accuracy', color='red')
+plt.title('Model Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
 plt.show()
