@@ -20,7 +20,7 @@ CONF_THRES = 0.3
 KP_CONF_THRES = 0.7
 
 CHARS = "0123456789"
-BLANK_IDX = len(CHARS) # Index 10
+BLANK_IDX = " " # Index 10
 # ======================================================================
 
 # Khởi tạo mô hình
