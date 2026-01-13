@@ -12,11 +12,11 @@ from src.utils.four_point_transform import four_point_transform
 from model.Reader.crnn.ocrcrnn import OCRCRNNgray
 
 # ================= CONFIG =================
-YOLO_MODEL_PATH = "../../model/bestdetect131.pt"
+YOLO_MODEL_PATH = "../../model/bestDetect131.pt"
 OCR_MODEL_PATH = "../../model/Reader/crnn/crnn_synthetic_gray.pth"
-VIDEO_PATH = "C:/Users/letung373/Downloads/WIN_20260106_13_48_36_Pro.mp4"
-OUTPUT_VIDEO_PATH = "output_crnn.mp4"
-DEVICE = "cpu"
+VIDEO_PATH = "D:/Downloads/WIN_20260113_14_37_18_Pro.mp4"
+OUTPUT_VIDEO_PATH = "D:/Downloads/output_crnn.mp4"
+DEVICE = "cuda"
 CONF_THRES = 0.3
 KP_CONF_THRES = 0.7
 
@@ -253,7 +253,7 @@ def main():
 
                 # Áp dụng temporal filter
                 stable_time = temporal_filters[obj_id].update(raw_time, confidence)
-
+                
                 # Vẽ kết quả
                 for pt in pts[:4]:
                     cv2.circle(frame, (int(pt[0]), int(pt[1])), 5, (0, 255, 0), -1)
