@@ -14,8 +14,7 @@ IMG_SIZE = (50, 20)
 NUM_SAMPLES = 200000
 
 FORBIDDEN_TIMES = {
-    "0636", "0737", "0838", "1649", "1749",
-    "1845", "1949", "2056", "2257", "2358"
+    
 }
 
 if not os.path.exists(OUTPUT_DIR):

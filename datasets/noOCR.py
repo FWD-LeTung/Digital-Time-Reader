@@ -7,8 +7,8 @@ from tqdm import tqdm
 # =========================
 # CONFIG
 # =========================
-INPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/dataset/ocr/test/images"
-OUTPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/datasets/testGrayScale"
+INPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/dataset/ocr/train/images"
+OUTPUT_DIR = r"D:/model2-20260110T081631Z-3-001/model2/datasets/trainGrayScale"
 
 IMG_OUT_DIR = os.path.join(OUTPUT_DIR, "images")
 REJECT_DIR = os.path.join(OUTPUT_DIR, "rejected", "unknown_prefix")
