@@ -19,39 +19,31 @@ def set_seed(seed=42):
 
 set_seed(42)
 
-# =========================
-# CONFIG
-# =========================
 DATASET_ROOT = "D:/model2-20260110T081631Z-3-001/model2/datasets"
 
-TRAIN_DIR = os.path.join(DATASET_ROOT, "train2")
-TEST_DIR  = os.path.join(DATASET_ROOT, "test2")
+TRAIN_DIR = os.path.join(DATASET_ROOT, "train3")
+TEST_DIR  = os.path.join(DATASET_ROOT, "test3")
 
 IMG_W = 50
 IMG_H = 20
-CHANNELS = 1  # <<-- Đổi từ 3 thành 1
+CHANNELS = 1 
 
 BATCH_SIZE = 64
 EPOCHS = 20
 LR = 1e-3
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
+print(f"Using {DEVICE}")
 CHARS = "0123456789"
-NUM_CLASSES = len(CHARS) + 1  # + CTC blank
+NUM_CLASSES = len(CHARS) + 1  
 
-# =========================
-# LABEL ENCODER
-# =========================
+
 char2idx = {c: i for i, c in enumerate(CHARS)}
 idx2char = {i: c for c, i in char2idx.items()}
 
 def encode_label(text):
     return torch.tensor([char2idx[c] for c in text], dtype=torch.long)
 
-# =========================
-# DATASET
-# =========================
 class CRNNDataset(Dataset):
     def __init__(self, root_dir):
         self.img_dir = os.path.join(root_dir, "images")
@@ -72,15 +64,8 @@ class CRNNDataset(Dataset):
 
         # Đọc ảnh ở dạng grayscale
         img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) 
-        
-        # Đảm bảo ảnh đúng kích thước target nếu cần thiết
-        # img = cv2.resize(img, (IMG_W, IMG_H)) 
-
         img = cv2.resize(img, (IMG_W, IMG_H)) 
-        # ------------------------------------------
-
         img = img.astype("float32") / 255.0
-        # Chuyển thành (1, H, W)
         img = torch.from_numpy(img).unsqueeze(0) 
 
         label = encode_label(label)
@@ -93,47 +78,41 @@ def collate_fn(batch):
     labels = torch.cat(labels)
     return imgs, labels, label_lengths
 
-# =========================
-# MODEL
-# =========================
 class CRNN(nn.Module):
     def __init__(self):
         super().__init__()
-
+        # Giảm số filter của CNN
         self.cnn = nn.Sequential(
-            # Lớp đầu vào đổi từ 3 thành 1
-            nn.Conv2d(CHANNELS, 64, 3, padding=1), 
+            nn.Conv2d(CHANNELS, 32, 3, padding=1), 
             nn.ReLU(),
             nn.MaxPool2d(2, 2),      # 20x50 -> 10x25
 
-            nn.Conv2d(64, 128, 3, padding=1),
+            nn.Conv2d(32, 64, 3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2),      # 10x25 -> 5x12
         )
 
-        self.rnn = nn.LSTM(
-            input_size=128 * 5,
-            hidden_size=128,
-            num_layers=2,
+        # Sử dụng GRU và giảm hidden size
+        self.rnn = nn.GRU(
+            input_size=64 * 5,
+            hidden_size=64,
+            num_layers=1, # Giảm xuống 1 lớp
             bidirectional=True,
             batch_first=True
         )
 
-        self.fc = nn.Linear(256, NUM_CLASSES)
+        # FC Layer nhỏ hơn (64*2 = 128)
+        self.fc = nn.Linear(128, NUM_CLASSES)
 
     def forward(self, x):
         x = self.cnn(x)
         b, c, h, w = x.size()
         x = x.permute(0, 3, 1, 2).contiguous()
         x = x.view(b, w, c * h)
-
         x, _ = self.rnn(x)
         x = self.fc(x)
         return x
 
-# =========================
-# DECODE & METRIC (Giữ nguyên)
-# =========================
 def greedy_decode(logits):
     preds = logits.argmax(2)
     texts = []
@@ -163,9 +142,6 @@ def get_gt_texts(labels, label_lengths):
         idx += l
     return texts
 
-# =========================
-# TRAIN / EVAL LOOP (Giữ nguyên phần logic)
-# =========================
 train_ds = CRNNDataset(TRAIN_DIR)
 test_ds  = CRNNDataset(TEST_DIR)
 
@@ -243,16 +219,13 @@ for epoch in range(EPOCHS):
     test_losses.append(epoch_test_loss / len(test_loader))
     test_accs.append(epoch_test_correct / total_test_samples)
 
-    print(f"Epoch {epoch+1}: Train Acc={train_accs[-1]:.4f}, Test Acc={test_accs[-1]:.4f}")
+    print(f"Epoch {epoch+1}:Train Loss= {train_losses[-1]:.4f},  Train Acc={train_accs[-1]:.4f},Test Loss={test_losses[-1]:.4f}, Test Acc={test_accs[-1]:.4f}")
 
-# Save model
+
 save_path = "D:/Digital-Time-Reader/model/Reader/crnn/crnn_synthetic_gray.pth"
 os.makedirs(os.path.dirname(save_path), exist_ok=True)
 torch.save(model.state_dict(), save_path)
 
-# =========================
-# PLOT RESULTS
-# =========================
 plt.figure(figsize=(14, 5))
 
 # Đồ thị Loss

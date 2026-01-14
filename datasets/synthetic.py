@@ -7,14 +7,15 @@ from tqdm import tqdm
 from PIL import Image, ImageDraw, ImageFont
 from multiprocessing import Pool, cpu_count
 # --- CẤU HÌNH ---
-OUTPUT_DIR = "D:/model2-20260110T081631Z-3-001/model2/datasets/train3/images"
-LABEL_FILE = "D:/model2-20260110T081631Z-3-001/model2/datasets/train3/labels.txt"
+OUTPUT_DIR = "D:/model2-20260110T081631Z-3-001/model2/datasets/test3/images"
+LABEL_FILE = "D:/model2-20260110T081631Z-3-001/model2/datasets/test3/labels.txt"
 FONT_PATH = "D:/Downloads/SF-Pro.ttf"  
 IMG_SIZE = (50, 20)      
-NUM_SAMPLES = 200000
+NUM_SAMPLES = 20000
 
 FORBIDDEN_TIMES = {
-    
+    "0636", "0737", "0838", "1649", "1749",
+    "1845", "1949", "2056", "2257", "2358"
 }
 
 if not os.path.exists(OUTPUT_DIR):
