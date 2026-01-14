@@ -19,7 +19,6 @@ OUTPUT_VIDEO_PATH = "D:/Downloads/output_crnn.mp4"
 DEVICE = "cuda"
 CONF_THRES = 0.3
 KP_CONF_THRES = 0.7
-
 CHARS = "0123456789"
 BLANK_IDX = len(CHARS)  # Index 10
 
@@ -202,7 +201,7 @@ def preprocess_for_crnn(img):
 
 
 def main():
-    cap = cv2.VideoCapture(VIDEO_PATH)
+    cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Không thể mở video!")
         return
