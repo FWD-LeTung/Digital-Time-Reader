@@ -81,7 +81,6 @@ def collate_fn(batch):
 class CRNN(nn.Module):
     def __init__(self):
         super().__init__()
-        # Giảm số filter của CNN
         self.cnn = nn.Sequential(
             nn.Conv2d(CHANNELS, 32, 3, padding=1), 
             nn.ReLU(),
@@ -91,17 +90,14 @@ class CRNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2, 2),      # 10x25 -> 5x12
         )
-
-        # Sử dụng GRU và giảm hidden size
         self.rnn = nn.GRU(
             input_size=64 * 5,
             hidden_size=64,
-            num_layers=1, # Giảm xuống 1 lớp
+            num_layers=1,
             bidirectional=True,
             batch_first=True
         )
 
-        # FC Layer nhỏ hơn (64*2 = 128)
         self.fc = nn.Linear(128, NUM_CLASSES)
 
     def forward(self, x):
@@ -179,7 +175,6 @@ for epoch in range(EPOCHS):
 
         epoch_train_loss += loss.item()
         
-        # Tính Accuracy nhanh cho train (không cần pass riêng)
         with torch.no_grad():
             preds = greedy_decode(logits.cpu())
             gts = get_gt_texts(labels.cpu(), label_lengths)
@@ -192,7 +187,6 @@ for epoch in range(EPOCHS):
     train_losses.append(epoch_train_loss / len(train_loader))
     train_accs.append(epoch_train_correct / total_train_samples)
 
-    # --- EVAL PHASE ---
     model.eval()
     epoch_test_loss = 0
     epoch_test_correct = 0
