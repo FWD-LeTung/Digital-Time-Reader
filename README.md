@@ -1,4 +1,4 @@
-# Digital Time Reader - Đọc Giờ Từ Đồng Hồ Số
+# Digital Time Reader - Đọc Giờ Từ Đồng Hồ Trên Màn Hình Điện Thoại
 
 [![Python Version](https://img.shields.io/badge/python-3.7%2B-blue)](https://www.python.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.5%2B-green)](https://opencv.org/)
